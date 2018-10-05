@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Management;
 using System.Reflection;
 using System.ServiceProcess;
 using System.Text;
@@ -194,7 +195,16 @@ namespace ServiceBouncer
                         {
                             if (Name != controller.DisplayName)
                             {
-                                Name = controller.DisplayName;
+
+                                string serviceName = controller.ServiceName;
+                                string objPath = string.Format("Win32_Service.Name='{0}'", serviceName);
+                                using (ManagementObject service = new ManagementObject(new ManagementPath(objPath)))
+                                {
+                                    var description = service["Description"];
+                                    Name = controller.DisplayName + ": " + description;
+                                }
+
+
                                 changedEvents.Add("Name");
                             }
                         }
